@@ -4,7 +4,7 @@ require Exporter;
 
 {
     no strict "vars";
-    $VERSION = '0.01';
+    $VERSION = '0.02';
     @ISA     = qw(Exporter);
     @EXPORT  = qw(ht_tt2_filter);
 }
@@ -15,7 +15,7 @@ HTML::Template::Filter::TT2 - Template Toolkit 2 syntax for HTML::Template
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =head1 SYNOPSIS
 
@@ -37,7 +37,7 @@ Recognized syntax:
 
 =item *
 
-variables: C<[% variable %]>
+variables: C<[% variable %]>, C<[% variable :default |filter %]>
 
 =item *
 
@@ -67,13 +67,51 @@ sub ht_tt2_filter {
     $$text_ref =~ s{\[% *(loop|if|unless) +(\w+) *%\]}{<TMPL_\U$1\E $2>}gm;
     $$text_ref =~ s{\[% *(else) *%\]}{<TMPL_\U$1\E>}gm;
     $$text_ref =~ s{\[% *end_(\w+) *%\]}{</TMPL_\U$1\E>}gm;
-    $$text_ref =~ s{\[% *(\w+) *%\]}{<TMPL_VAR $1>}gm;
+    $$text_ref =~ s{
+            \[%                     # begin tag
+            \s* (\w+) \s*           # variable name
+            \s* (?:: \s* (.+?))?    # optional default value
+            \s* (?:\| \s* (\w+))?   # optional filter
+            \s* %\]                 # end tag
+        }
+        {__format_variable($1, $2, $3)}gemx;
+}
+
+sub __format_variable {
+    my ($var, $default, $filter) = @_;
+
+    # variable name
+    my $ht_syntax = "<TMPL_VAR NAME=$var";
+
+    # handle default value
+    if (defined $default) {
+        # autoquote unquoted values
+        if ($default !~ /^["']/) {
+            if    ($default !~ /"/) { $default = qq/"$default"/ }
+            elsif ($default !~ /'/) { $default = qq/'$default'/ }
+            else  { warn "Can't handle unquoted value '$default' for variable $var" }
+        }
+
+        $ht_syntax .= " DEFAULT=$default";
+    }
+
+    # handle escape filter
+    $ht_syntax .= " ESCAPE=$filter" if defined $filter;
+
+    # end tag
+    $ht_syntax .= ">";
+
+    return $ht_syntax;
 }
 
 
 =head1 AUTHOR
 
 SE<eacute>bastien Aperghis-Tramoni, C<< <sebastien at aperghis.net> >>
+
+=head2 SEE ALSO
+
+L<HTML::Template>, L<Template::Toolkit>
 
 =head1 BUGS
 
