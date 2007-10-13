@@ -4,7 +4,7 @@ require Exporter;
 
 {
     no strict "vars";
-    $VERSION = '0.02';
+    $VERSION = '0.03';
     @ISA     = qw(Exporter);
     @EXPORT  = qw(ht_tt2_filter);
 }
@@ -15,7 +15,7 @@ HTML::Template::Filter::TT2 - Template Toolkit 2 syntax for HTML::Template
 
 =head1 VERSION
 
-Version 0.02
+Version 0.03
 
 =head1 SYNOPSIS
 
@@ -25,29 +25,46 @@ Version 0.02
 
 =head1 DESCRIPTION
 
-This C<HTML::Template> filter allows you to use the Template Toolkit 2 
+This C<HTML::Template> filter allows you to use a subset of the Template Toolkit 2 
 syntax, which is much less verbose than the default syntax. This is not 
 an emulation of TT2, so you're still limited to the usual C<HTML::Template>
 semantics. Also, in order to keep the filter fast and simple, the 
 C<[% end %]> must be written with the block name. See below for details.
 
-Recognized syntax:
+=head1 SYNTAX
 
-=over
+Here is the syntax recognised by this module.
 
-=item *
+=head2 Variables
 
-variables: C<[% variable %]>, C<[% variable :default |filter %]>
+Simple interpolation:
 
-=item *
+    [% variable %]
 
-C<if> statements: C<[% if condition %] ... [% else %] ... [end_if %]>
+Interpolation with default value:
 
-=item *
+    [% variable :default %]
 
-loops: C<[% loop loop-name %] ... [% end_loop %]>
+Interpolation with filter (i.e. a C<HTML::Template> escape mode):
 
-=back
+    [% variable |filter %]
+
+Interpolation with default value and filter:
+
+    [% variable :default |filter %]
+
+=head2 If statements
+
+    [% if condition %] ... [% else %] ... [end_if %]
+
+The difference with the actual TT2 syntax is that you must use C<end_if> 
+instead of C<end>
+
+=head2 Loops
+
+    [% loop loop-name %] ... [% end_loop %]
+
+As for the C<if> statement, you must use C<end_loop> instead of C<end>.
 
 =head1 EXPORT
 
@@ -58,7 +75,7 @@ Exports the C<ht_tt2_filter> function by default.
 =head2 ht_tt2_filter()
 
 Pass a reference to this function to the C<filter> parameter when calling
-C<<HTML::Template->new()>>
+C<< HTML::Template->new() >>
 
 =cut
 
